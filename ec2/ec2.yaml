@@ -64,7 +64,7 @@ Resources:
      ImageId: !Sub '{{resolve:ssm:/${environment}/ec2/ami_id}}'                 
      KeyName: !Sub '{{resolve:ssm:/${environment}/ec2/keyname}}'                
      InstanceType: !Sub '{{resolve:ssm:/${environment}/ec2/instance_type}}'     
-     IamInstanceProfile: !Ref ec2InstanceRole                                    
+     IamInstanceProfile: !Ref ec2InstanceProfile                                    
      SecurityGroupIds:                                                          
         - Fn::ImportValue:                                                      
            Fn::Sub: "${permStackName}-PUBLIC-SG"                                
