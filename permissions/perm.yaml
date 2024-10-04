@@ -1,0 +1,120 @@
+Description: "Permission stack to create Security Groups to launch EC2 instances"
+
+Parameters: 
+  networkStackName:
+    Description: Name of the base stack with all network resources
+    Type: String
+    Default: nw
+
+  environment: 
+    Type: String 
+    Default: dev 
+    AllowedValues: 
+      - dev
+      - prod 
+
+Resources:
+  publicSG:
+    Description: "Allow TCP/80, TCP/8080 and SSH connection"
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow http to client host
+      VpcId: 
+         Fn::ImportValue: 
+           Fn::Sub: "${networkStackName}-VPCID"
+
+      SecurityGroupIngress:
+        - Description: "Allow port 80" 
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: !Sub '{{resolve:ssm:/${environment}/network/open_cidr}}'
+
+        - Description: "Allow port 8080" 
+          IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: !Sub '{{resolve:ssm:/${environment}/network/open_cidr}}'
+
+        - Description: "Allow ssh port 22" 
+          IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Sub '{{resolve:ssm:/${environment}/network/open_cidr}}'
+
+      Tags:
+       - Key: Name
+         Value: !Join [" - ", [Fn::Sub: "${AWS::StackName}", "Public Security Group"] ]
+       - Key: Environment
+         Value: !Sub ${environment}	
+         
+  privateSG:
+    Description: "Allow TCP/80, TCP/8080, ICMP and SSH connection from Public subnets"
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow http to client host
+      VpcId: 
+         Fn::ImportValue: 
+           Fn::Sub: "${networkStackName}-VPCID"
+
+      SecurityGroupIngress:
+        - Description: "Allow port 80" 
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: !Sub '{{resolve:ssm:/${environment}/network/public_subnet1_cidr}}'
+        - Description: "Allow port 8080" 
+          IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: !Sub '{{resolve:ssm:/${environment}/network/public_subnet1_cidr}}'
+        - Description: "Allow port 22" 
+          IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Sub '{{resolve:ssm:/${environment}/network/public_subnet1_cidr}}'
+        - Description: "Allow ping" 
+          IpProtocol: icmp
+          FromPort: "-1"
+          ToPort: "-1"
+          CidrIp: !Sub '{{resolve:ssm:/${environment}/network/public_subnet1_cidr}}'
+
+        - Description: "Allow port 80" 
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: !Sub '{{resolve:ssm:/${environment}/network/public_subnet2_cidr}}'
+        - Description: "Allow port 8080" 
+          IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: !Sub '{{resolve:ssm:/${environment}/network/public_subnet2_cidr}}'
+        - Description: "Allow port 22" 
+          IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Sub '{{resolve:ssm:/${environment}/network/public_subnet2_cidr}}'
+        - Description: "Allow ping" 
+          IpProtocol: icmp
+          FromPort: "-1"
+          ToPort: "-1"
+          CidrIp: !Sub '{{resolve:ssm:/${environment}/network/public_subnet2_cidr}}'
+
+      Tags:
+       - Key: Name
+         Value: !Join [" - ", [Fn::Sub: "${AWS::StackName}", "Private Security Group"] ]
+       - Key: Environment
+         Value: !Sub ${environment}	
+
+Outputs:
+  PublicSecurityGroup:
+    Value: !Ref publicSG
+    Export:
+      "Name" :
+        Fn::Sub: "${AWS::StackName}-PUBLIC-SG"
+
+  PrivateSecurityGroup:
+    Value: !Ref privateSG
+    Export:
+      "Name" :
+        Fn::Sub: "${AWS::StackName}-PRIVATE-SG"
