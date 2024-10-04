@@ -45,6 +45,7 @@ Resources:
       DeploymentGroupName: mydeploygroup 
       ApplicationName: !Ref myCodeDeployProject
       ServiceRoleArn: !GetAtt myCodeDeployRole.Arn 
+      DeploymentConfigName: CodeDeployDefault.AllAtOnce
       Ec2TagFilters: 
        - Key: Name 
          Value: ec2-PublicInstance 
