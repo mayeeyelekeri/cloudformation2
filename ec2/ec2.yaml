@@ -92,7 +92,7 @@ Resources:
 
      Tags:
        - Key: Name
-         Value: !Join [" - ", [Fn::Sub: "${AWS::StackName}", "PublicInstance"] ]
+         Value: !Join ["-", [Fn::Sub: "${AWS::StackName}", "PublicInstance"] ]
        - Key: Environment
          Value: !Sub ${environment}
 
