@@ -106,6 +106,39 @@ Resources:
        - Key: Environment
          Value: !Sub ${environment}	
 
+  ec2InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: ec2InstanceRole
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: s3accesspolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:GetObjectVersion
+                Resource: '*'
+
+  ec2InstanceProfile:
+    Description: "NUTS" 
+    Type: AWS::IAM::InstanceProfile 
+    Properties: 
+      Path: "/" 
+      Roles: 
+        - 
+          Ref: ec2InstanceRole
+          
 Outputs:
   PublicSecurityGroup:
     Value: !Ref publicSG
@@ -118,3 +151,17 @@ Outputs:
     Export:
       "Name" :
         Fn::Sub: "${AWS::StackName}-PRIVATE-SG"
+  
+  Ec2InstanceProfile:
+    Value: !Ref ec2InstanceProfile
+    Export:
+      "Name" :
+        Fn::Sub: "${AWS::StackName}-EC2-INSTANCE-PROFILE"
+  
+  Ec2Role:
+    Value: !Ref ec2InstanceRole
+    Export:
+      "Name" :
+        Fn::Sub: "${AWS::StackName}-EC2-INSTANCE-ROLE"
+        
+
