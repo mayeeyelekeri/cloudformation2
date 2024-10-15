@@ -46,15 +46,15 @@ Resources:
      RequiresCompatibilities: 
        - FARGATE
      ExecutionRoleArn: !Sub ${myECSRole}
+     Memory: 3 GB
+     Cpu: 1 vCPU 
+     NetworkMode: awsvpc
      ContainerDefinitions: 
        - Name: SpringDemo
          Image: !Sub '{{resolve:ssm:/${environment}/ecs/ecr_repository}}'                 
          PortMappings: 
            - ContainerPort: 8080
              Protocol: tcp 
-     Memory: 3 GB
-     Cpu: 1 vCPU 
-     NetworkMode: awsvpc
 
      Tags:
        - Key: Name
@@ -114,17 +114,6 @@ Resources:
                       - logs:BatchGetImage
                       - logs:PutLogEvents
                   Resource: "*"
-
-  myECR: 
-    Type: AWS::ECR::Repository 
-    Properties: 
-      RepositoryName: anotherrepo
-      Tags:
-       - Key: Name
-         Value: !Join ["-", [Fn::Sub: "${AWS::StackName}", "ECR"] ]
-       - Key: Environment
-         Value: !Sub ${environment}
-      
 Outputs: 
   ECSClusterID: 
     Description: ECS Cluster 
@@ -134,6 +123,10 @@ Outputs:
     Description: ECS Task 
     Value: !Ref myEcsTaskDefinition 
 
+  MyRepositoryPath: 
+    Description: ECR Repo 
+    Value: !Sub '{{resolve:ssm:/${environment}/ecs/ecr_repository}}'                 
+
   MyRepositoryArn: 
     Description: ECR Repo 
-    Value: !GetAtt myECR.Arn 
+    Value: !Sub '{{resolve:ssm:/${environment}/ecs/ecr_repository_arn}}'                 

@@ -25,6 +25,9 @@ echo "AWS Account ID: $aws_account_id"
 # Syntax: aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <account_id>.dkr.ecr.<region>.amazonaws.com
 cmd="aws ecr get-login-password --region $region | docker login --username AWS --password-stdin $aws_account_id.dkr.ecr.us-east-1.amazonaws.com"
 echo "executing cmd: $cmd"
+eval output=\`${cmd}\`
+echo "output of login: $output"
+
  
 ##  -- Tag an ECR image to push 
 ##  docker tag e9ae3c220b23 <aws_account_id>.dkr.ecr.<region>.amazonaws.com/<repository_name>:tag
@@ -34,10 +37,16 @@ docker tag $repository_name $aws_account_id.dkr.ecr.us-east-1.amazonaws.com/$rep
 ##  docker push <aws_account_id>.dkr.ecr.<region>.amazonaws.com/<repository>:tag
 docker push $aws_account_id.dkr.ecr.us-east-1.amazonaws.com/$repository_name
 
-## Add a new parameter with the repository arn
+## Add a new parameter with the repository Path
 aws ssm put-parameter \
             --name "/dev/ecs/ecr_repository" \
             --type "String" \
-            --value "$aws_account_id.dkr.ecr.us-east-1.amazonaws.com/$repository_name" \
+            --value "$uri" \
             --overwrite
 
+## Add a new parameter with the repository arn
+aws ssm put-parameter \
+            --name "/dev/ecs/ecr_repository_arn" \
+            --type "String" \
+            --value "$arn" \
+            --overwrite
