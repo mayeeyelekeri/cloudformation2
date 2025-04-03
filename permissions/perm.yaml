@@ -83,43 +83,36 @@ Resources:
           FromPort: 80
           ToPort: 80
           CidrIp: !Sub '{{resolve:ssm:/${environment}/network/public_subnet1_cidr}}'
-		  
         - Description: "Allow port 8080" 
           IpProtocol: tcp
           FromPort: 8080
           ToPort: 8080
           CidrIp: !Sub '{{resolve:ssm:/${environment}/network/public_subnet1_cidr}}'
-		  
         - Description: "Allow port 22" 
           IpProtocol: tcp
           FromPort: 22
           ToPort: 22
           CidrIp: !Sub '{{resolve:ssm:/${environment}/network/public_subnet1_cidr}}'
-		  
         - Description: "Allow ping" 
           IpProtocol: icmp
           FromPort: "-1"
           ToPort: "-1"
           CidrIp: !Sub '{{resolve:ssm:/${environment}/network/public_subnet1_cidr}}'
-
         - Description: "Allow port 80" 
           IpProtocol: tcp
           FromPort: 80
           ToPort: 80
-          CidrIp: !Sub '{{resolve:ssm:/${environment}/network/public_subnet2_cidr}}'
-		  
+          CidrIp: !Sub '{{resolve:ssm:/${environment}/network/public_subnet2_cidr}}'  
         - Description: "Allow port 8080" 
           IpProtocol: tcp
           FromPort: 8080
           ToPort: 8080
           CidrIp: !Sub '{{resolve:ssm:/${environment}/network/public_subnet2_cidr}}'
-		  
         - Description: "Allow port 22" 
           IpProtocol: tcp
           FromPort: 22
           ToPort: 22
           CidrIp: !Sub '{{resolve:ssm:/${environment}/network/public_subnet2_cidr}}'
-		  
         - Description: "Allow ping" 
           IpProtocol: icmp
           FromPort: "-1"
@@ -134,7 +127,6 @@ Resources:
 
   # Create EC2 instance role with S3 access  
   ec2InstanceRole:
-	Description: "EC2 Instance Role with S3 access" 
     Type: AWS::IAM::Role
     Properties:
       RoleName: ec2InstanceRole
