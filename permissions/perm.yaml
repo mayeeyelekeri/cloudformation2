@@ -1,3 +1,14 @@
+# File: network.yaml 
+# This module create all the "permission" related resources 
+#
+# Before executing this, make sure "init.sh" is called which would create all "Parameter Store" values 
+#
+# Resource that would be created
+# 1) Public Security Group (80, 8080, 22 for 0.0.0.0/0)
+# 2) Private Security Group 
+# 3) EC2 Instance Profile 
+# 4) EC2 Instance Role  
+
 Description: "Permission stack to create Security Groups to launch EC2 instances"
 
 Parameters: 
@@ -14,6 +25,10 @@ Parameters:
       - prod 
 
 Resources:
+  # Create Public Security Group 
+  # Port 80 - access to 0.0.0.0/0 
+  # Port 22 - access to 0.0.0.0/0 
+  # Port 8080 - access to 0.0.0.0/0 
   publicSG:
     Description: "Allow TCP/80, TCP/8080 and SSH connection"
     Type: AWS::EC2::SecurityGroup
@@ -47,7 +62,12 @@ Resources:
          Value: !Join [" - ", [Fn::Sub: "${AWS::StackName}", "Public Security Group"] ]
        - Key: Environment
          Value: !Sub ${environment}	
-         
+     
+  # Create Private Security Group 
+  # access to Public Subnet 1 for ports 80,22 and 8080
+  # access to Public Subnet 2 for ports 80,22 and 8080  
+  # access to Public Subnet 1 to ping    
+  # access to Public Subnet 2 to ping 
   privateSG:
     Description: "Allow TCP/80, TCP/8080, ICMP and SSH connection from Public subnets"
     Type: AWS::EC2::SecurityGroup
@@ -63,16 +83,19 @@ Resources:
           FromPort: 80
           ToPort: 80
           CidrIp: !Sub '{{resolve:ssm:/${environment}/network/public_subnet1_cidr}}'
+		  
         - Description: "Allow port 8080" 
           IpProtocol: tcp
           FromPort: 8080
           ToPort: 8080
           CidrIp: !Sub '{{resolve:ssm:/${environment}/network/public_subnet1_cidr}}'
+		  
         - Description: "Allow port 22" 
           IpProtocol: tcp
           FromPort: 22
           ToPort: 22
           CidrIp: !Sub '{{resolve:ssm:/${environment}/network/public_subnet1_cidr}}'
+		  
         - Description: "Allow ping" 
           IpProtocol: icmp
           FromPort: "-1"
@@ -84,16 +107,19 @@ Resources:
           FromPort: 80
           ToPort: 80
           CidrIp: !Sub '{{resolve:ssm:/${environment}/network/public_subnet2_cidr}}'
+		  
         - Description: "Allow port 8080" 
           IpProtocol: tcp
           FromPort: 8080
           ToPort: 8080
           CidrIp: !Sub '{{resolve:ssm:/${environment}/network/public_subnet2_cidr}}'
+		  
         - Description: "Allow port 22" 
           IpProtocol: tcp
           FromPort: 22
           ToPort: 22
           CidrIp: !Sub '{{resolve:ssm:/${environment}/network/public_subnet2_cidr}}'
+		  
         - Description: "Allow ping" 
           IpProtocol: icmp
           FromPort: "-1"
@@ -106,7 +132,9 @@ Resources:
        - Key: Environment
          Value: !Sub ${environment}	
 
+  # Create EC2 instance role with S3 access  
   ec2InstanceRole:
+	Description: "EC2 Instance Role with S3 access" 
     Type: AWS::IAM::Role
     Properties:
       RoleName: ec2InstanceRole
@@ -130,15 +158,21 @@ Resources:
                   - s3:GetObjectVersion
                 Resource: '*'
 
+  # Create EC2 Instance profile with the role above for S3 access 
   ec2InstanceProfile:
-    Description: "NUTS" 
+    Description: "EC2 Instance profile with S3 access" 
     Type: AWS::IAM::InstanceProfile 
     Properties: 
       Path: "/" 
       Roles: 
         - 
           Ref: ec2InstanceRole
-          
+      
+# Export all the values 
+# 1) public security group 
+# 2) private security group
+# 3) EC2 Role 
+# 4) EC2 Instance profile  
 Outputs:
   PublicSecurityGroup:
     Value: !Ref publicSG

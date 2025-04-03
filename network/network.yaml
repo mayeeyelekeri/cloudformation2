@@ -222,6 +222,7 @@ Resources:
       RouteTableId:
         Ref: privateRouteTable
 
+# Export the variables (VPC ID, all subnet IDs')
 Outputs:
   VpcId: 
     Value: !Ref myVPC
